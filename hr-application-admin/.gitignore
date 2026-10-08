@@ -1,0 +1,42 @@
+# Node dependencies
+node_modules
+src/node_modules
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+
+# Next.js build output
+.next/
+out/
+build/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage (testing)
+coverage/
+
+# Misc
+.DS_Store
+*.pem
+
+# Vercel deployment folder
+.vercel
+
+# Yarn PnP (if using Yarn)
+.pnp/
+.pnp.js

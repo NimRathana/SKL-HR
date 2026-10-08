@@ -1,0 +1,63 @@
+{
+  "name": "hr-application-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
+    "@mui/material-nextjs": "^7.3.9",
+    "@mui/x-data-grid": "^9.12.0",
+    "@mui/x-date-pickers": "^9.13.0",
+    "axios": "^1.4.0",
+    "classnames": "^2.5.1",
+    "dayjs": "^1.11.23",
+    "exceljs": "^4.4.0",
+    "framer-motion": "^13.1.1",
+    "i18next": "^26.0.3",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "next": "^16.3.4",
+    "react": "19.2.4",
+    "react-color-palette": "^7.3.1",
+    "react-dom": "19.2.4",
+    "react-draggable": "^4.7.1",
+    "react-i18next": "^17.0.2",
+    "react-perfect-scrollbar": "^1.5.8",
+    "react-use": "^17.6.0",
+    "remixicon": "^4.9.1",
+    "server-only": "^0.0.1",
+    "stylis": "^4.3.6",
+    "stylis-plugin-rtl": "^2.1.1",
+    "tailwindcss-logical": "^4.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "^20.19.39",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^10.1.0",
+    "eslint-config-next": "^0.2.4",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

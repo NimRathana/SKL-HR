@@ -31,7 +31,10 @@ from app.schemas.auth_schema import (
     VerifyRegistrationRequest,
 )
 from app.config.settings import settings
-from app.services.email_queue import EmailQueueUnavailableError, enqueue_email_operation
+from app.services.email_queue import (
+    EmailDeliveryUnavailableError,
+    enqueue_or_send_email_operation,
+)
 from app.services.email_service import create_queued_email
 from app.utils.request_metadata import get_browser_and_device, get_request_metadata
 from app.utils.security_monitor import (
@@ -103,8 +106,8 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
             user_id=user.id,
         )
         try:
-            enqueue_email_operation(operation.id)
-        except EmailQueueUnavailableError:
+            enqueue_or_send_email_operation(operation.id, db)
+        except EmailDeliveryUnavailableError:
             return MessageResponse(message="If an account exists for this email, reset instructions have been queued for delivery")
 
     return MessageResponse(message="If an account exists for this email, reset instructions have been sent")
@@ -172,11 +175,11 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
         location=location,
     )
     try:
-        enqueue_email_operation(operation.id)
-    except EmailQueueUnavailableError as exc:
+        enqueue_or_send_email_operation(operation.id, db)
+    except EmailDeliveryUnavailableError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Registration saved but verification email delivery is temporarily unavailable. Start Redis and the email worker, then try again.",
+            detail="Registration saved, but verification email delivery failed. Check the production SMTP settings and try again.",
         ) from exc
 
     return RegistrationResponse(message="Verification code sent", email=email)

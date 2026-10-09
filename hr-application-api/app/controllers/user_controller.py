@@ -13,7 +13,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import Session
 
 from app.config.settings import settings
-from app.services.email_queue import EmailQueueUnavailableError, enqueue_email_operation
+from app.services.email_queue import EmailDeliveryUnavailableError, enqueue_or_send_email_operation
 from app.services.email_service import create_queued_email
 from app.enums.plan_type import PlanType
 from app.enums.user_role import UserRole
@@ -287,11 +287,11 @@ def send_invite(email: str, auth_user_id: UUID, request: Request, db: Session) -
         location=location,
     )
     try:
-        enqueue_email_operation(operation.id)
-    except EmailQueueUnavailableError as exc:
+        enqueue_or_send_email_operation(operation.id, db)
+    except EmailDeliveryUnavailableError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Invitation saved but email delivery is temporarily unavailable. Start Redis and the email worker, then resend the invitation.",
+            detail="Invitation saved, but email delivery failed. Check the production SMTP settings and resend the invitation.",
         ) from exc
     return {
         'message': 'Invitation sent successfully',

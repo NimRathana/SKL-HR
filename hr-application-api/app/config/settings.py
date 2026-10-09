@@ -47,6 +47,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def set_app_base_url(self):
+        if self.APP_BASE_URL.strip():
+            self.APP_BASE_URL = self.APP_BASE_URL.rstrip("/")
+            return self
+
         self.APP_BASE_URL = next(
             (
                 origin.rstrip("/")

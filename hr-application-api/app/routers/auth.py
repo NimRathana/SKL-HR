@@ -159,14 +159,15 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
     pending.verified_at = None
     db.commit()
 
-    _, device_type, location = get_request_metadata(request)
+    ip_address, location = get_security_request_metadata(request)
+    _, device_type, _ = get_request_metadata(request)
     operation = create_queued_email(
         db,
         None,
         email,
         "Verify your Recruitment account",
         f"Your verification code is {code}. It expires in {VERIFICATION_MINUTES} minutes.",
-        ip_address=source_ip,
+        ip_address=ip_address,
         device_type=device_type,
         location=location,
     )
@@ -264,11 +265,11 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
             attempt_reserved = False
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
 
-        ip_address, device_type, location = get_request_metadata(request)
+        _, device_type, location = get_request_metadata(request)
         browser, device = get_browser_and_device(request.headers.get('user-agent', ''))
         db.add(LoginHistory(
             user_id=user.id,
-            ip_address=ip_address,
+            ip_address=source_ip,
             device_type=device_type,
             browser=browser,
             device=device,

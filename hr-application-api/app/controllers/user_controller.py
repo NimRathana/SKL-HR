@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta, timezone
 import secrets
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 from uuid import UUID
 
 from fastapi import HTTPException, Request, UploadFile, status
@@ -28,6 +28,7 @@ from app.controllers.access import require_management_user
 from app.services.plan_entitlements import enforce_resource_capacity, require_plan_feature
 from app.utils.file_handler import delete_file, get_file_url, save_upload_file
 from app.utils.request_metadata import get_request_metadata
+from app.utils.security_monitor import get_security_request_metadata
 
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -265,7 +266,12 @@ def send_invite(email: str, auth_user_id: UUID, request: Request, db: Session) -
     pending.verified_at = None
 
     db.commit()
-    ip_address, device_type, location = get_request_metadata(request)
+    ip_address, location = get_security_request_metadata(request)
+    _, device_type, _ = get_request_metadata(request)
+    invite_url = urljoin(
+        f'{settings.APP_BASE_URL.rstrip("/")}/',
+        f'invite?{urlencode({"email": email, "token": invite_token})}',
+    )
     operation = create_queued_email(
         db,
         current_user.id,
@@ -273,7 +279,7 @@ def send_invite(email: str, auth_user_id: UUID, request: Request, db: Session) -
         'Your employee invitation code',
         (
             f'Your invitation code is {code}.\n\n'
-            f'Complete your setup here: {settings.APP_BASE_URL.rstrip("/")}/invite?email={email}&token={invite_token}\n\n'
+            f'Complete your setup here: {invite_url}\n\n'
             'Use the code and the secure link in the invitation to finish your account setup.'
         ),
         ip_address=ip_address,

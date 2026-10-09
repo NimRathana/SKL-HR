@@ -38,10 +38,8 @@ import {
     Add as AddIcon,
     Business as BusinessIcon,
     Cancel,
-    CheckCircle as CheckCircleIcon,
     Close as CloseIcon,
     MailOutline as MailOutlineIcon,
-    PersonAdd as PersonAddIcon,
     Refresh as RefreshIcon
 } from '@mui/icons-material';
 
@@ -129,12 +127,7 @@ const UsersPage = () => {
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-    const [assignStep, setAssignStep] = useState('email');
     const [assignEmail, setAssignEmail] = useState('');
-    const [assignName, setAssignName] = useState('');
-    const [assignPassword, setAssignPassword] = useState('');
-    const [assignCode, setAssignCode] = useState('');
-    const [generatedCode, setGeneratedCode] = useState('');
     const [companies, setCompanies] = useState([]);
     const [companyAssignments, setCompanyAssignments] = useState([]);
     const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
@@ -180,11 +173,6 @@ const UsersPage = () => {
 
     const resetAssignForm = () => {
         setAssignEmail('');
-        setAssignName('');
-        setAssignPassword('');
-        setAssignCode('');
-        setGeneratedCode('');
-        setAssignStep('email');
     };
 
     const handleOpenAssignUser = () => {
@@ -288,68 +276,16 @@ const UsersPage = () => {
         try {
             setSubmitting(true);
             const api = await getApi();
-            const { data } = await api.post('/users/invite', {
+            await api.post('/users/invite', {
                 email: trimmedEmail
             });
 
-            const code = String(data?.verification_code || '').trim();
-            if (code) {
-                setGeneratedCode(code);
-            }
-
-            notifyGlobal(`Invitation sent successfully to ${trimmedEmail}.`, 'success');
+            notifyGlobal(`Invitation link and verification code sent to ${trimmedEmail}.`, 'success');
             setAssignDialogOpen(false);
             resetAssignForm();
         } catch (err) {
             const message = getApiErrorMessage(err, 'Failed to send invitation.');
             notifyGlobal(message, 'error');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleCompleteAssignUser = async event => {
-        event.preventDefault();
-      if (isReadOnly) {
-        notifyGlobal('Inactive accounts can only view data.', 'error');
-        return;
-      }
-
-        const trimmedEmail = assignEmail.trim();
-        const trimmedName = assignName.trim();
-        const trimmedPassword = assignPassword.trim();
-        const normalizedCode = assignCode.trim();
-
-        if (!trimmedEmail || !trimmedName || !trimmedPassword) {
-          notifyGlobal('Please enter the username, password, and verification code.', 'error');
-            return;
-        }
-
-        if (!normalizedCode || normalizedCode.length !== 6) {
-          notifyGlobal('Please enter a valid 6-digit verification code.', 'error');
-            return;
-        }
-
-        if (normalizedCode !== generatedCode) {
-          notifyGlobal('The verification code is incorrect.', 'error');
-            return;
-        }
-
-        try {
-            setSubmitting(true);
-            const api = await getApi();
-            await api.post('/users/invite/verify', {
-                email: trimmedEmail,
-                verification_code: normalizedCode,
-                username: trimmedName,
-                password: trimmedPassword
-            });
-
-              notifyGlobal('User account created successfully.', 'success');
-            await fetchUsers();
-            handleCloseAssignUser();
-        } catch (err) {
-          notifyGlobal(getApiErrorMessage(err, 'Failed to create the user account.'), 'error');
         } finally {
             setSubmitting(false);
         }
@@ -673,7 +609,7 @@ const UsersPage = () => {
           fullWidth
           PaperProps={{
             component: "form",
-            onSubmit:assignStep === "email" ? handleSendAssignLink : handleCompleteAssignUser
+            onSubmit: handleSendAssignLink
           }}
         >
           <DialogTitle
@@ -707,11 +643,7 @@ const UsersPage = () => {
                   color: "inherit",
                 }}
               >
-                {assignStep === "email" ? (
-                  <MailOutlineIcon fontSize="small" />
-                ) : (
-                  <PersonAddIcon fontSize="small" />
-                )}
+                <MailOutlineIcon fontSize="small" />
               </Box>
 
               <Box>
@@ -720,14 +652,10 @@ const UsersPage = () => {
                   fontWeight={700}
                   lineHeight={1.2}
                 >
-                  {assignStep === "email"
-                    ? "Assign User"
-                    : "Complete User Setup"}
+                  Assign User
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {assignStep === "email"
-                    ? "Send an invitation to a new user"
-                    : "Verify the invite code and finish setup"}
+                  Send an invitation to a new user
                 </Typography>
               </Box>
             </Stack>
@@ -742,58 +670,19 @@ const UsersPage = () => {
           </DialogTitle>
           <DialogContent dividers>
             <Stack spacing={1.75}>
-              {assignStep === "email" ? (
-                <TextField
-                  fullWidth
-                  autoFocus
-                  required
-                  label="Email Address"
-                  type="email"
-                  value={assignEmail}
-                  onChange={(event) => setAssignEmail(event.target.value)}
-                  placeholder="name@company.com"
-                />
-              ) : (
-                <>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    autoFocus
-                    required
-                    label="Verification Code"
-                    value={assignCode}
-                    onChange={(event) =>
-                      setAssignCode(
-                        event.target.value.replace(/\D/g, "").slice(0, 6),
-                      )
-                    }
-                    placeholder="123456"
-                    inputProps={{ inputMode: "numeric", maxLength: 6 }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    size="small"
-                    required
-                    label="Username"
-                    value={assignName}
-                    onChange={(event) => setAssignName(event.target.value)}
-                    placeholder="Enter username"
-                  />
-
-                  <TextField
-                    fullWidth
-                    size="small"
-                    required
-                    label="Password"
-                    type="password"
-                    value={assignPassword}
-                    onChange={(event) => setAssignPassword(event.target.value)}
-                    placeholder="Create password"
-                  />
-                </>
-              )}
-
+              <TextField
+                fullWidth
+                autoFocus
+                required
+                label="Email Address"
+                type="email"
+                value={assignEmail}
+                onChange={(event) => setAssignEmail(event.target.value)}
+                placeholder="name@company.com"
+              />
+              <Typography variant="caption" color="text.secondary">
+                The invitee will receive a secure setup link and a verification code by email.
+              </Typography>
             </Stack>
           </DialogContent>
           <DialogActions>
@@ -802,25 +691,9 @@ const UsersPage = () => {
               type="submit"
               variant="contained"
               disabled={submitting}
-              startIcon={
-                assignStep === "email" ? (
-                  <MailOutlineIcon fontSize="small" />
-                ) : (
-                  submitting ? (
-                    <CircularProgress size={15} color="inherit" />
-                  ) : (
-                    <CheckCircleIcon fontSize="small" />
-                  )
-                )
-              }
+              startIcon={submitting ? <CircularProgress size={15} color="inherit" /> : <MailOutlineIcon fontSize="small" />}
             >
-              {submitting
-                ? assignStep === "email"
-                  ? "Send Invite"
-                  : "Saving..."
-                : assignStep === "email"
-                  ? "Send Invite"
-                  : "Create User"}
+              {submitting ? "Sending..." : "Send Invite"}
             </Button>
           </DialogActions>
         </Dialog>
